@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:mvc="http://www.springframework.org/schema/mvc"
+       xsi:schemaLocation="
+        http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans.xsd
+        http://www.springframework.org/schema/context
+        http://www.springframework.org/schema/context/spring-context.xsd
+        http://www.springframework.org/schema/mvc
+        http://www.springframework.org/schema/mvc/spring-mvc.xsd">
+<context:annotation-config/>
+    <context:component-scan base-package="countries" />
+
+    <mvc:annotation-driven conversion-service="conversion-service"/>
+
+    <bean id="templateResolver"
+          class="org.thymeleaf.spring5.templateresolver.SpringResourceTemplateResolver">
+        <property name="prefix" value="/WEB-INF/views/" />
+        <property name="suffix" value=".html" />
+        <property name="templateMode" value="HTML" />
+        <property name="cacheable" value="true" />
+    </bean>
+
+    <bean id="templateEngine"
+          class="org.thymeleaf.spring5.SpringTemplateEngine">
+        <property name="templateResolver" ref="templateResolver" />
+        <property name="enableSpringELCompiler" value="true" />
+        <!--Temporals addon -->
+        <property name="additionalDialects">
+            <set>
+                <bean class="org.thymeleaf.extras.java8time.dialect.Java8TimeDialect"/>
+            </set>
+        </property>
+    </bean>
+
+    <bean id="viewResolver" class="org.thymeleaf.spring5.view.ThymeleafViewResolver">
+        <property name="templateEngine" ref="templateEngine" />
+        <property name="characterEncoding" value="UTF-8"/>
+        <property name="order" value="1" />
+        <property name="viewNames" value="*" />
+    </bean>
+
+    <mvc:resources location="/resources/" mapping="/resources/**"/>
+    <bean id="conversion-service" class="org.springframework.context.support.ConversionServiceFactoryBean">
+        <property name="converters">
+            <bean class="countries.controller.CountryConverter" />
+        </property>
+    </bean>
+    <mvc:interceptors>
+        <bean class="org.springframework.web.servlet.i18n.LocaleChangeInterceptor">
+            <property name="paramName" value="lang" />
+        </bean>
+    </mvc:interceptors>
+
+    <bean id="localeResolver" class="org.springframework.web.servlet.i18n.SessionLocaleResolver">
+        <property name="defaultLocale" value="ru" />
+    </bean>
+
+    <bean id="messageSource" class="org.springframework.context.support.ResourceBundleMessageSource">
+        <property name="basename" value="ms" />
+        <property name="defaultEncoding" value="UTF-8" />
+    </bean>
+</beans>
